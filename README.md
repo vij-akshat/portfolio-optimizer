@@ -6,6 +6,9 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.32%2B-red)](https://streamlit.io)
 [![CVXPY](https://img.shields.io/badge/CVXPY-1.4%2B-orange)](https://www.cvxpy.org)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit-ff4b4b)](https://portfolio-optimizer-lne53yq74g458zxupuarcy.streamlit.app)
+
+**[Open Live App](https://portfolio-optimizer-lne53yq74g458zxupuarcy.streamlit.app)**
 
 ---
 
