@@ -66,37 +66,118 @@ def metric_card(label, value, sub="", color="#2ecc71"):
         f'</div>', unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-# ASSETS
 # ─────────────────────────────────────────────
-ASSETS = {
-    "XLK": "Technology", "XLF": "Financials", "XLV": "Healthcare",
-    "XLY": "Consumer Disc", "XLP": "Consumer Staples", "XLE": "Energy",
-    "XLI": "Industrials", "XLB": "Materials", "XLU": "Utilities",
-    "XLRE": "Real Estate",
-}
-SECTOR_GROUPS = {
-    "Growth":      ["XLK", "XLY"],
-    "Defensive":   ["XLP", "XLU", "XLV"],
-    "Cyclical":    ["XLF", "XLI", "XLB", "XLE"],
-    "Real Assets": ["XLRE", "XLE", "XLB"],
+# UNIVERSES
+# ─────────────────────────────────────────────
+UNIVERSES = {
+    "S&P 500 Sectors": {
+        "tickers": {
+            "XLK": "Technology", "XLF": "Financials", "XLV": "Healthcare",
+            "XLY": "Consumer Disc", "XLP": "Consumer Staples", "XLE": "Energy",
+            "XLI": "Industrials", "XLB": "Materials", "XLU": "Utilities",
+            "XLRE": "Real Estate",
+        },
+        "groups": {
+            "Growth":      ["XLK", "XLY"],
+            "Defensive":   ["XLP", "XLU", "XLV"],
+            "Cyclical":    ["XLF", "XLI", "XLB", "XLE"],
+            "Real Assets": ["XLRE", "XLE", "XLB"],
+        },
+        "description": "10 SPDR sector ETFs covering the full S&P 500",
+    },
+    "Nasdaq 100 Leaders": {
+        "tickers": {
+            "AAPL": "Apple", "MSFT": "Microsoft", "NVDA": "NVIDIA",
+            "AMZN": "Amazon", "GOOGL": "Alphabet", "META": "Meta",
+            "TSLA": "Tesla", "AVGO": "Broadcom", "COST": "Costco",
+            "NFLX": "Netflix",
+        },
+        "groups": {
+            "Mega-cap Tech": ["AAPL", "MSFT", "NVDA", "GOOGL", "META"],
+            "Consumer":      ["AMZN", "TSLA", "COST", "NFLX"],
+            "Semis":         ["NVDA", "AVGO"],
+        },
+        "description": "Top 10 Nasdaq 100 constituents by market cap",
+    },
+    "Dow Jones 30 (Sample)": {
+        "tickers": {
+            "JPM": "JPMorgan", "GS": "Goldman", "V": "Visa",
+            "JNJ": "J&J", "UNH": "UnitedHealth", "HD": "Home Depot",
+            "MCD": "McDonald's", "BA": "Boeing", "CAT": "Caterpillar",
+            "MMM": "3M",
+        },
+        "groups": {
+            "Finance":       ["JPM", "GS", "V"],
+            "Healthcare":    ["JNJ", "UNH"],
+            "Consumer":      ["HD", "MCD"],
+            "Industrial":    ["BA", "CAT", "MMM"],
+        },
+        "description": "10 representative Dow Jones 30 blue chips",
+    },
+    "Global Markets": {
+        "tickers": {
+            "SPY":  "US (S&P 500)", "QQQ":  "US (Nasdaq)",
+            "EWJ":  "Japan",        "EWZ":  "Brazil",
+            "FXI":  "China",        "EWG":  "Germany",
+            "EWU":  "UK",           "EWC":  "Canada",
+            "EWA":  "Australia",    "INDA": "India",
+        },
+        "groups": {
+            "Americas":    ["SPY", "QQQ", "EWZ", "EWC"],
+            "Europe":      ["EWG", "EWU"],
+            "Asia-Pacific": ["EWJ", "FXI", "EWA", "INDA"],
+        },
+        "description": "Major country/region ETFs for global macro exposure",
+    },
+    "Fixed Income": {
+        "tickers": {
+            "TLT":  "20Y+ Treasury",  "IEF":  "7-10Y Treasury",
+            "SHY":  "1-3Y Treasury",  "LQD":  "Corp Bonds (IG)",
+            "HYG":  "High Yield",     "TIP":  "TIPS",
+            "MBB":  "Mortgage-backed","EMB":  "EM Bonds",
+            "BND":  "Total Bond Mkt", "AGG":  "Agg Bond",
+        },
+        "groups": {
+            "Government": ["TLT", "IEF", "SHY", "TIP"],
+            "Credit":     ["LQD", "HYG", "MBB"],
+            "Global":     ["EMB", "BND", "AGG"],
+        },
+        "description": "Bond ETFs across duration and credit quality",
+    },
+    "Commodities & Real Assets": {
+        "tickers": {
+            "GLD":  "Gold",       "SLV":  "Silver",
+            "USO":  "Oil",        "UNG":  "Natural Gas",
+            "PDBC": "Commodities","CORN": "Corn",
+            "WEAT": "Wheat",      "DBA":  "Agri Basket",
+            "PALL": "Palladium",  "PPLT": "Platinum",
+        },
+        "groups": {
+            "Metals":      ["GLD", "SLV", "PALL", "PPLT"],
+            "Energy":      ["USO", "UNG"],
+            "Agriculture": ["CORN", "WEAT", "DBA", "PDBC"],
+        },
+        "description": "Commodity and real asset ETFs",
+    },
 }
 
 # ─────────────────────────────────────────────
 # DATA (cached)
 # ─────────────────────────────────────────────
 @st.cache_data(show_spinner=False)
-def load_data(years_back: int):
+def load_data(years_back: int, universe_name: str):
     try:
         import yfinance as yf
+        assets = UNIVERSES[universe_name]["tickers"]
         end   = datetime.now()
         start = end - timedelta(days=years_back * 365)
-        tickers = list(ASSETS.keys())
+        tickers = list(assets.keys())
         raw = yf.download(tickers, start=start, end=end, progress=False, auto_adjust=True)
         if isinstance(raw.columns, pd.MultiIndex):
             prices = raw["Close"] if "Close" in raw.columns.get_level_values(0) else raw["Adj Close"]
         else:
             prices = raw
-        prices.columns = [ASSETS.get(c, c) for c in prices.columns]
+        prices.columns = [assets.get(c, c) for c in prices.columns]
         prices = prices.dropna()
         returns = np.log(prices / prices.shift(1)).dropna()
         return prices, returns, None
@@ -191,6 +272,13 @@ with st.sidebar:
 
     st.divider()
     st.markdown("### Settings")
+    universe_name = st.selectbox(
+        "Asset Universe",
+        list(UNIVERSES.keys()),
+        index=0,
+        help="Choose which market to optimize"
+    )
+    st.caption(UNIVERSES[universe_name]["description"])
     years_back = st.slider("Years of history", 1, 5, 3)
     epsilon    = st.select_slider("Regularization ε", [1e-5, 1e-4, 1e-3, 1e-2], value=1e-4,
                                   format_func=lambda x: f"{x:.0e}")
@@ -206,7 +294,7 @@ with st.sidebar:
 # LOAD DATA
 # ─────────────────────────────────────────────
 with st.spinner("Fetching sector ETF data…"):
-    prices, returns, err = load_data(years_back)
+    prices, returns, err = load_data(years_back, universe_name)
 
 if err or returns is None:
     st.error(f"Data fetch failed: {err}")
@@ -220,27 +308,21 @@ vols       = np.sqrt(np.diag(Sigma))
 # Sector index mapping (use ticker list from prices which still uses original tickers)
 raw_tickers = list(returns.columns)
 # Rebuild from original ticker keys
-@st.cache_data(show_spinner=False)
-def get_sector_indices(years_back):
-    import yfinance as yf
-    end   = datetime.now()
-    start = end - timedelta(days=years_back * 365)
-    raw = yf.download(list(ASSETS.keys()), start=start, end=end, progress=False, auto_adjust=True)
-    if isinstance(raw.columns, pd.MultiIndex):
-        p = raw["Close"] if "Close" in raw.columns.get_level_values(0) else raw["Adj Close"]
-    else:
-        p = raw
-    p = p.dropna()
-    tl = list(p.columns)
+def get_sector_indices(original_tickers, universe_name):
+    groups = UNIVERSES[universe_name]["groups"]
     sector_idx = {}
-    for sector, tkrs in SECTOR_GROUPS.items():
-        idxs = [tl.index(t) for t in tkrs if t in tl]
+    for sector, tkrs in groups.items():
+        idxs = [original_tickers.index(t) for t in tkrs if t in original_tickers]
         if idxs:
             sector_idx[sector] = idxs
-    return sector_idx, tl
+    return sector_idx
 
-sector_indices, original_tickers = get_sector_indices(years_back)
-asset_labels = [ASSETS.get(t, t) for t in original_tickers]
+original_tickers = list(prices.columns)
+# Map back to ticker symbols via reverse lookup
+assets_map = UNIVERSES[universe_name]["tickers"]
+label_map  = {v: v for v in assets_map.values()}  # names are already labels
+asset_labels = list(prices.columns)
+sector_indices = get_sector_indices(original_tickers, universe_name)
 
 
 # ═══════════════════════════════════════════════════════
