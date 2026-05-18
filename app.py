@@ -166,23 +166,32 @@ UNIVERSES = {
 # ─────────────────────────────────────────────
 @st.cache_data(show_spinner=False)
 def load_data(years_back: int, universe_name: str):
-    try:
-        import yfinance as yf
-        assets = UNIVERSES[universe_name]["tickers"]
-        end   = datetime.now()
-        start = end - timedelta(days=years_back * 365)
-        tickers = list(assets.keys())
-        raw = yf.download(tickers, start=start, end=end, progress=False, auto_adjust=True)
-        if isinstance(raw.columns, pd.MultiIndex):
-            prices = raw["Close"] if "Close" in raw.columns.get_level_values(0) else raw["Adj Close"]
-        else:
-            prices = raw
-        prices.columns = [assets.get(c, c) for c in prices.columns]
-        prices = prices.dropna()
-        returns = np.log(prices / prices.shift(1)).dropna()
-        return prices, returns, None
-    except Exception as e:
-        return None, None, str(e)
+    import yfinance as yf
+    import time as _time
+    assets = UNIVERSES[universe_name]["tickers"]
+    end   = datetime.now()
+    start = end - timedelta(days=years_back * 365)
+    tickers = list(assets.keys())
+    # Retry up to 3 times with backoff — needed for Streamlit Cloud shared IPs
+    for attempt in range(3):
+        try:
+            raw = yf.download(tickers, start=start, end=end, progress=False,
+                              auto_adjust=True)
+            if isinstance(raw.columns, pd.MultiIndex):
+                prices = raw["Close"] if "Close" in raw.columns.get_level_values(0) else raw["Adj Close"]
+            else:
+                prices = raw
+            prices.columns = [assets.get(c, c) for c in prices.columns]
+            prices = prices.dropna()
+            if len(prices) < 30:
+                raise ValueError(f"Too few rows ({len(prices)}) — possible rate limit")
+            returns = np.log(prices / prices.shift(1)).dropna()
+            return prices, returns, None
+        except Exception as e:
+            if attempt < 2:
+                _time.sleep(3 * (attempt + 1))
+            else:
+                return None, None, str(e)
 
 
 def estimate_params(returns_df, epsilon=1e-4):
@@ -296,8 +305,12 @@ with st.sidebar:
 with st.spinner("Fetching sector ETF data…"):
     prices, returns, err = load_data(years_back, universe_name)
 
-if err or returns is None:
-    st.error(f"Data fetch failed: {err}")
+if err or returns is None or len(returns) == 0:
+    st.error(
+        f"Could not load market data: {err}\n\n"
+        "Yahoo Finance rate-limits cloud servers on first load. "
+        "**Wait 30 seconds and refresh the page** — it usually works on the second try."
+    )
     st.stop()
 
 tickers    = list(prices.columns)    # these are sector names from ASSETS dict
@@ -383,7 +396,7 @@ elif page == "Asset Universe":
             "Volatility (%)":      (vols * 100).round(2),
             "Sharpe Ratio":        (mu / vols).round(3),
         }, index=asset_labels)
-        st.dataframe(stats_df.style.background_gradient(subset=["Sharpe Ratio"], cmap="RdYlGn"),
+        st.dataframe(stats_df,
                      use_container_width=True)
 
         fig = go.Figure()
