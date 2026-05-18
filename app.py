@@ -179,25 +179,25 @@ def build_frontier(mu, Sigma, n_pts=60, epsilon=1e-4):
 # SIDEBAR
 # ═══════════════════════════════════════════════════════
 with st.sidebar:
-    st.markdown("## 📈 Portfolio Optimizer")
+    st.markdown("## Portfolio Optimizer")
     st.markdown("*Markowitz → Production Constraints*")
     st.divider()
 
     page = st.radio("**Navigate**", [
-        "🏠 Overview", "📊 Asset Universe", "🔧 Regularization",
-        "📉 Efficient Frontier", "⚙️ Constraint Explorer",
-        "💸 Constraint Cost", "🔄 Turnover Rebalancing", "🏆 Final Portfolio"
+        "Overview", "Asset Universe", "Regularization",
+        "Efficient Frontier", "Constraint Explorer",
+        "Constraint Cost", "Turnover Rebalancing", "Final Portfolio"
     ])
 
     st.divider()
-    st.markdown("### ⚙️ Settings")
+    st.markdown("### Settings")
     years_back = st.slider("Years of history", 1, 5, 3)
     epsilon    = st.select_slider("Regularization ε", [1e-5, 1e-4, 1e-3, 1e-2], value=1e-4,
                                   format_func=lambda x: f"{x:.0e}")
     n_steps    = st.slider("Animation steps", 15, 60, 35)
 
     st.divider()
-    st.markdown("### 🔗 Resources")
+    st.markdown("### Resources")
     st.markdown("[Math Derivations](docs/math_derivations.md)")
     st.markdown("[Parameter Guide](docs/parameter_guide.md)")
 
@@ -246,7 +246,7 @@ asset_labels = [ASSETS.get(t, t) for t in original_tickers]
 # ═══════════════════════════════════════════════════════
 # PAGE: OVERVIEW
 # ═══════════════════════════════════════════════════════
-if page == "🏠 Overview":
+if page == "Overview":
     st.markdown("# Portfolio Optimizer")
     st.markdown("**Mean-variance optimization: from Markowitz to production-ready constraints**")
 
@@ -290,10 +290,10 @@ if page == "🏠 Overview":
 # ═══════════════════════════════════════════════════════
 # PAGE: ASSET UNIVERSE
 # ═══════════════════════════════════════════════════════
-elif page == "📊 Asset Universe":
+elif page == "Asset Universe":
     st.markdown("## Asset Universe — Returns & Correlations")
 
-    tab1, tab2, tab3 = st.tabs(["📊 Asset Statistics", "🌡️ Correlation Heatmap", "📈 Cumulative Returns"])
+    tab1, tab2, tab3 = st.tabs(["Asset Statistics", "Correlation Heatmap", "Cumulative Returns"])
 
     with tab1:
         stats_df = pd.DataFrame({
@@ -319,7 +319,8 @@ elif page == "📊 Asset Universe":
             yaxis=dict(title="Expected Return (%)", gridcolor="#1e2a38"),
             margin=dict(l=50, r=20, t=50, b=50),
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key="chart_321_1")
+
 
     with tab2:
         corr = Sigma / np.outer(vols, vols)
@@ -337,7 +338,8 @@ elif page == "📊 Asset Universe":
             height=500, title="Asset Return Correlations",
             margin=dict(l=100, r=20, t=50, b=100),
         )
-        st.plotly_chart(fig2, use_container_width=True)
+        st.plotly_chart(fig2, use_container_width=True, key="chart_339_2")
+
 
     with tab3:
         cum = (1 + returns).cumprod()
@@ -358,13 +360,14 @@ elif page == "📊 Asset Universe":
             margin=dict(l=50, r=20, t=50, b=50),
             legend=dict(bgcolor="rgba(0,0,0,0)", ncols=2),
         )
-        st.plotly_chart(fig3, use_container_width=True)
+        st.plotly_chart(fig3, use_container_width=True, key="chart_360_3")
+
 
 
 # ═══════════════════════════════════════════════════════
 # PAGE: REGULARIZATION
 # ═══════════════════════════════════════════════════════
-elif page == "🔧 Regularization":
+elif page == "Regularization":
     st.markdown("## Covariance Regularization")
     st.markdown("$$\\Sigma_{\\varepsilon} = \\Sigma + \\varepsilon I$$")
 
@@ -409,7 +412,8 @@ elif page == "🔧 Regularization":
             margin=dict(l=50, r=20, t=50, b=40),
             legend=dict(bgcolor="rgba(0,0,0,0)"),
         )
-        placeholder.plotly_chart(fig, use_container_width=True)
+        placeholder.plotly_chart(fig, use_container_width=True, key=f"anim_411_{i}")
+
         time.sleep(0.05)
 
     st.markdown(
@@ -421,7 +425,7 @@ elif page == "🔧 Regularization":
 # ═══════════════════════════════════════════════════════
 # PAGE: EFFICIENT FRONTIER
 # ═══════════════════════════════════════════════════════
-elif page == "📉 Efficient Frontier":
+elif page == "Efficient Frontier":
     st.markdown("## Efficient Frontier")
     st.markdown("Sweeping target returns from min to max to trace the full risk-return tradeoff.")
 
@@ -488,7 +492,8 @@ elif page == "📉 Efficient Frontier":
             margin=dict(l=50, r=20, t=50, b=50),
             legend=dict(bgcolor="rgba(0,0,0,0)"),
         )
-        placeholder.plotly_chart(fig, use_container_width=True)
+        placeholder.plotly_chart(fig, use_container_width=True, key="chart_490_4")
+
         time.sleep(0.04)
 
     st.markdown(
@@ -501,7 +506,7 @@ elif page == "📉 Efficient Frontier":
 # ═══════════════════════════════════════════════════════
 # PAGE: CONSTRAINT EXPLORER
 # ═══════════════════════════════════════════════════════
-elif page == "⚙️ Constraint Explorer":
+elif page == "Constraint Explorer":
     st.markdown("## Constraint Explorer — Live Re-optimization")
     st.markdown("Adjust constraints and watch the portfolio update in real time.")
 
@@ -548,7 +553,8 @@ elif page == "⚙️ Constraint Explorer":
             yaxis=dict(gridcolor="#1e2a38"),
             margin=dict(l=100, r=60, t=50, b=40),
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key="chart_550_5")
+
         if use_turn and result["turnover"] is not None:
             st.metric("Actual Turnover", f"{result['turnover']*100:.1f}%",
                       delta=f"limit: {turn_max*100:.0f}%")
@@ -557,7 +563,7 @@ elif page == "⚙️ Constraint Explorer":
 # ═══════════════════════════════════════════════════════
 # PAGE: CONSTRAINT COST
 # ═══════════════════════════════════════════════════════
-elif page == "💸 Constraint Cost":
+elif page == "Constraint Cost":
     st.markdown("## Constraint Cost Analysis")
     st.markdown("How much Sharpe ratio do position limits cost?")
 
@@ -597,7 +603,8 @@ elif page == "💸 Constraint Cost":
             yaxis=dict(title="Sharpe Ratio", gridcolor="#1e2a38"),
             margin=dict(l=50, r=80, t=50, b=50),
         )
-        placeholder.plotly_chart(fig, use_container_width=True)
+        placeholder.plotly_chart(fig, use_container_width=True, key=f"anim_599_{i}")
+
         time.sleep(0.04)
 
     # Sharpe cost bars
@@ -617,7 +624,8 @@ elif page == "💸 Constraint Cost":
         yaxis=dict(title="Sharpe Cost (%)", gridcolor="#1e2a38"),
         margin=dict(l=50, r=20, t=50, b=50),
     )
-    st.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(fig2, use_container_width=True, key="chart_619_6")
+
     st.dataframe(cost_df.set_index("Max Weight (%)"), use_container_width=True)
     st.markdown(
         '<div class="insight-box">A 10–20% cap typically costs 5–10% of unconstrained Sharpe. '
@@ -629,7 +637,7 @@ elif page == "💸 Constraint Cost":
 # ═══════════════════════════════════════════════════════
 # PAGE: TURNOVER REBALANCING
 # ═══════════════════════════════════════════════════════
-elif page == "🔄 Turnover Rebalancing":
+elif page == "Turnover Rebalancing":
     st.markdown("## Turnover-Constrained Rebalancing")
     st.markdown("Starting from equal-weight, how fast can we reach the optimal portfolio?")
 
@@ -680,7 +688,8 @@ elif page == "🔄 Turnover Rebalancing":
             yaxis=dict(title="Sharpe Ratio", gridcolor="#1e2a38"),
             margin=dict(l=50, r=80, t=50, b=50),
         )
-        placeholder.plotly_chart(fig, use_container_width=True)
+        placeholder.plotly_chart(fig, use_container_width=True, key=f"anim_682_{i}")
+
         time.sleep(0.04)
 
     st.dataframe(turn_df.set_index("Max Turnover (%)"), use_container_width=True)
@@ -693,7 +702,7 @@ elif page == "🔄 Turnover Rebalancing":
 # ═══════════════════════════════════════════════════════
 # PAGE: FINAL PORTFOLIO
 # ═══════════════════════════════════════════════════════
-elif page == "🏆 Final Portfolio":
+elif page == "Final Portfolio":
     st.markdown("## Final Production Portfolio")
     st.markdown("Moderate risk aversion, position limits, sector caps.")
 
@@ -720,7 +729,7 @@ elif page == "🏆 Final Portfolio":
         with m3: metric_card("Sharpe Ratio",    f"{final['sharpe']:.3f}", color=C["warn"])
         with m4: metric_card("Positions",       str(final["n_positions"]), color=C["purple"])
 
-    tab1, tab2 = st.tabs(["🥧 Allocation", "📉 On Frontier"])
+    tab1, tab2 = st.tabs(["Allocation", "On Frontier"])
 
     with tab1:
         wts = final["weights"]
@@ -739,7 +748,8 @@ elif page == "🏆 Final Portfolio":
             height=420, title="Final Portfolio Allocation",
             margin=dict(l=20, r=20, t=50, b=20),
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key="chart_741_7")
+
 
         final_df = pd.DataFrame({
             "Asset": asset_labels,
@@ -784,4 +794,5 @@ elif page == "🏆 Final Portfolio":
             margin=dict(l=50, r=20, t=50, b=50),
             legend=dict(bgcolor="rgba(0,0,0,0)"),
         )
-        st.plotly_chart(fig2, use_container_width=True)
+        st.plotly_chart(fig2, use_container_width=True, key="chart_786_8")
+
