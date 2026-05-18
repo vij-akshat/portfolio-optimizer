@@ -358,7 +358,7 @@ elif page == "Asset Universe":
             xaxis=dict(title="Date", gridcolor="#1e2a38"),
             yaxis=dict(title="Cumulative Return", gridcolor="#1e2a38"),
             margin=dict(l=50, r=20, t=50, b=50),
-            legend=dict(bgcolor="rgba(0,0,0,0)", ncols=2),
+            legend=dict(bgcolor="rgba(0,0,0,0)", orientation="h"),
         )
         st.plotly_chart(fig3, use_container_width=True, key="chart_360_3")
 
@@ -492,7 +492,7 @@ elif page == "Efficient Frontier":
             margin=dict(l=50, r=20, t=50, b=50),
             legend=dict(bgcolor="rgba(0,0,0,0)"),
         )
-        placeholder.plotly_chart(fig, use_container_width=True, key="chart_490_4")
+        placeholder.plotly_chart(fig, use_container_width=True, key=f"anim_495_{i}")
 
         time.sleep(0.04)
 
