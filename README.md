@@ -9,6 +9,9 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit-ff4b4b)](https://portfolio-optimizer-lne53yq74g458zxupuarcy.streamlit.app)
 
 **[Open Live App](https://portfolio-optimizer-lne53yq74g458zxupuarcy.streamlit.app)**
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit-ff4b4b)](https://portfolio-optimizer-lne53yq74g458zxupuarcy.streamlit.app)
+
+**[Open Live App](https://portfolio-optimizer-lne53yq74g458zxupuarcy.streamlit.app)**
 
 ---
 
@@ -76,7 +79,7 @@ portfolio-optimizer/
 ## Quick Start
 
 ```bash
-git clone https://github.com/<your-username>/portfolio-optimizer.git
+git clone https://github.com/vij-akshat/portfolio-optimizer.git
 cd portfolio-optimizer
 pip install -r requirements.txt
 streamlit run app.py
